@@ -4,6 +4,7 @@ from pydash import has,get
 class PaymentsDomestic(AbstractTestCase):
 
     def setUp(self):
+        self._number_of_parties = 1
         self._payload = {
             "Data": {
                 "Initiation": {
@@ -113,13 +114,19 @@ class PaymentsDomestic(AbstractTestCase):
     def test_5(self):
         payload = self._payload
         payload["Data"]["ConsentId"] = PaymentsDomestic.ConsentId
-        resp = self.req.doBasicRequest('/PaymentsAPI/v3.0.0/domestic-payment', self._payload, PaymentsDomestic.token)
-        PaymentsDomestic.ConsentId = get(resp, 'Data.ConsentId')
-        self.log.info("Retrieved Consent %s", PaymentsDomestic.ConsentId)
-        return PaymentsDomestic.ConsentId is not None
+        resp = self.req.doBasicRequest('/PaymentsAPI/v3.0.0/domestic-payments', self._payload, PaymentsDomestic.token)
+        PaymentsDomestic.PaymentId = get(resp, 'Data.ConsentId')
+        self.log.info("Retrieved Payment Submission for %s", PaymentsDomestic.PaymentId)
+        return PaymentsDomestic.PaymentId is not None
 
-
-
-        
-       
+    # Flow test
+    def test_6(self):
+        self.log.info("Authorize other parties")
+        for i in range(self._number_of_parties):
+            self.log.info("Authorize party {0}".format(i))
+            self.test_3()
+            self.log.info("Payment Submission for {0}".format(i))
+            self.test_4()
+            self.test_5()
+            self.log.info("END flow for {0}".format(i))
         
