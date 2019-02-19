@@ -15,7 +15,7 @@ class TLSHelper:
     thumbprint = None
 
     def __init__(self, config):
-        self.PUBLIC_KEY_PATH, self.PRIVATE_KEY_PATH = config['MTLS']['publicKey'], config['MTLS']['privateKey']
+        self.PUBLIC_KEY_PATH, self.PRIVATE_KEY_PATH = config['Signing']['publicKey'], config['Signing']['privateKey']
         self.publicKey, self.privateKey = self.loadCerts(self.PUBLIC_KEY_PATH, self.PRIVATE_KEY_PATH)
     
     def loadCerts(self, pub, priv):

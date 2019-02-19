@@ -50,13 +50,14 @@ class PaymentsDomestic(AbstractTestCase):
     # Get Token
     def test_1(self):
         token_response = self.req.doTokenRequest(self.CLIENT_ID, scope="payments")
+        print(token_response)
         PaymentsDomestic.token = get(token_response,'access_token')
         self.log.info("Retrieved Token %s", PaymentsDomestic.token)
         return PaymentsDomestic.token is not None
 
     # Do Payment Initiation
     def test_2(self):
-        resp = self.req.doBasicRequest('/PaymentsAPI/v3.0.0/domestic-payment-consents', self._payload, PaymentsDomestic.token)
+        resp = self.req.doBasicRequest('/open-banking/v3.0/pisp/domestic-payment-consents', self._payload, PaymentsDomestic.token)
         PaymentsDomestic.ConsentId = get(resp, 'Data.ConsentId')
         self.log.info("Retrieved Consent %s", PaymentsDomestic.ConsentId)
         return PaymentsDomestic.ConsentId is not None
@@ -96,7 +97,7 @@ class PaymentsDomestic(AbstractTestCase):
             "client_id": self.CLIENT_ID
         }
 
-        encodedJWT = self.jwt.encode(_token_payload)
+        encodedJWT = self.req.signJWS(_token_payload)
         uri = "{0}/authorize/?response_type=code id_token&client_id={1}&scope={2} openid&redirect_uri={3}&request={4}".format(self.URL,self.CLIENT_ID,"payments",self.REDIRECT_URL,encodedJWT)
         
         print("\n\nAuth Url\n{0}\n".format(uri))
@@ -114,7 +115,7 @@ class PaymentsDomestic(AbstractTestCase):
     def test_5(self):
         payload = self._payload
         payload["Data"]["ConsentId"] = PaymentsDomestic.ConsentId
-        resp = self.req.doBasicRequest('/PaymentsAPI/v3.0.0/domestic-payments', self._payload, PaymentsDomestic.token)
+        resp = self.req.doBasicRequest('/open-banking/v3.0/pisp/domestic-payments', self._payload, PaymentsDomestic.token)
         PaymentsDomestic.PaymentId = get(resp, 'Data.ConsentId')
         self.log.info("Retrieved Payment Submission for %s", PaymentsDomestic.PaymentId)
         return PaymentsDomestic.PaymentId is not None
@@ -129,4 +130,4 @@ class PaymentsDomestic(AbstractTestCase):
             self.test_4()
             self.test_5()
             self.log.info("END flow for {0}".format(i))
-        
+            
